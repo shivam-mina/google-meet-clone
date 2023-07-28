@@ -1,4 +1,4 @@
-const Home = async (req, res) => {
+const userHome = async (req, res) => {
   try {
     res.json({ message: 'user home' })
   } catch (error) {
@@ -7,5 +7,5 @@ const Home = async (req, res) => {
 }
 
 module.exports = {
-  Home,
+  userHome,
 }

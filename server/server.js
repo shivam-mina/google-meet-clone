@@ -14,7 +14,7 @@ app.listen(process.env.PORT, () => {
   console.log(`listening on port ${process.env.PORT}`.yellow.underline)
 })
 
-// midlleware for x-www-form-urlencoded
+// middleware for x-www-form-urlencoded
 app.use(
   bodyParser.urlencoded({
     extended: true,
@@ -24,4 +24,4 @@ app.use(
 //middleware for Json parsing
 app.use(express.json())
 
-app.use('/api', authRoute)
+app.use('/api/users', authRoute)

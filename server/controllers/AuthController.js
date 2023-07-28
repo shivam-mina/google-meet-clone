@@ -2,7 +2,7 @@ const User = require('../models/User')
 const bcrypt = require('bcryptjs')
 
 // @desc    Register new user
-// @route   POST /api/signup
+// @route   POST /api/users/signup
 // @access  Public
 const Signup = async (req, res) => {
   try {
@@ -12,9 +12,9 @@ const Signup = async (req, res) => {
     }
 
     // Check if user exists
-    const existinguser = await User.findOne({ email })
+    const existingUser = await User.findOne({ email })
 
-    if (existinguser) {
+    if (existingUser) {
       return res.status(400).json({ message: 'User already exists' })
     }
     // Hash password
@@ -40,7 +40,9 @@ const Signup = async (req, res) => {
 const Login = async (req, res) => {
   try {
     const { email, password } = req.body
-
+    if (!email || !password) {
+      res.status(400).json({ message: 'Please add all fields' })
+    }
     // Check for user email
     const existingUser = await User.findOne({ email })
     if (!existingUser) {
