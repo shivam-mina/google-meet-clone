@@ -16,7 +16,7 @@ const Login = () => {
     try {
       const { data } = await axios.post('/users/login', { email, password })
 
-      if (data.message == 'login success') {
+      if (data.message === 'login success') {
         navigate('/dashboard')
       }
     } catch (error) {
