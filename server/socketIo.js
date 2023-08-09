@@ -1,7 +1,7 @@
 const emailToSocketMapping = new Map()
 const socketToEmailMapping = new Map()
 
-module.exports = socketServer = (server) => {
+const socketServer = (server) => {
   // Setting up Socket-io
   const io = require('socket.io')(server, {
     cors: {
@@ -19,7 +19,7 @@ module.exports = socketServer = (server) => {
       console.log('User: ', emailId, ' Joined room: ', roomId)
 
       emailToSocketMapping.set(emailId, socket.id)
-      // socketToEmailMapping.set(socket.id, emailId)
+      socketToEmailMapping.set(socket.id, emailId)
 
       io.to(roomId).emit('new-user:joined', {
         emailId,
@@ -28,6 +28,22 @@ module.exports = socketServer = (server) => {
       })
       socket.join(roomId)
       io.to(socket.id).emit('user:joined', { success: true, roomId: roomId })
+
+      // handling discoonect event
+      socket.on('disconnect', () => {
+        const emailId = socketToEmailMapping.get(socket.id)
+        if (emailId) {
+          console.log('User Disconnected: ', emailId)
+
+          emailToSocketMapping.delete(emailId)
+          socketToEmailMapping.delete(socket.id)
+        }
+      })
     })
   })
+}
+
+module.exports = {
+  emailToSocketMapping,
+  socketServer,
 }

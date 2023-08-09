@@ -7,8 +7,9 @@ require('dotenv').config()
 
 const connectDB = require('./config/connectDB')
 const authRoute = require('./routes/userRoutes')
+const meetRoute = require('./routes/meetRoutes')
 const { errorHandler } = require('./middlewares/error')
-const socketServer = require('./socketIo')
+const { socketServer } = require('./socketIo')
 
 // Connection to MongoDb atlas
 connectDB()
@@ -46,3 +47,4 @@ app.use(errorHandler)
 app.use(express.json())
 
 app.use('/api/users', authRoute)
+app.use('/api/', meetRoute)
