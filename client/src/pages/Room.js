@@ -1,15 +1,15 @@
 import React, { useEffect, useCallback, useState } from 'react'
 import { useSocket } from '../context/SocketProvider'
 import axios from 'axios'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 
 const Room = () => {
   /** User variables */
   const socket = useSocket()
   const [onlineUsers, setOnlineUsers] = useState({})
   const keyValueArray = Object.entries(onlineUsers)
-  const [roomId, setRoomId] = useState()
   const navigate = useNavigate()
+  const { roomId } = useParams()
 
   /**
    * Functions
@@ -31,7 +31,6 @@ const Room = () => {
    * triggered when we recieve (emit) that a new user joined the room
    * */
   const handleNewUserJoined = useCallback((data) => {
-    // setRoomId(data.roomId)
     getOnlineUsers()
   }, [])
 
@@ -40,11 +39,6 @@ const Room = () => {
    * */
   const handleDisconnect = useCallback(
     (data) => {
-      // setOnlineUsers((prevOnlineUsers) => {
-      //   const updatedUsers = { ...prevOnlineUsers }
-      //   delete updatedUsers[data.emailId]
-      //   return updatedUsers
-      // })
       getOnlineUsers()
       navigate('/dashboard')
     },
