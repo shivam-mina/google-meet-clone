@@ -59,7 +59,7 @@ const Login = () => {
               </div>
               <div className="left-container-buttons-signup">
                 <button className="bg-transparent hover:bg-black text-black font-semibold hover:text-white py-2 px-4 border border-black hover:border-transparent rounded">
-                  SignUp
+                  Sign Up
                 </button>
               </div>
             </div>
@@ -85,7 +85,7 @@ const Login = () => {
                     value={email}
                     placeholder="Enter Email"
                     onChange={handleOnChange}
-                    className="w-2/3 px-4 py-2 mt-7 bg-transparent text-base border-b-2 border-black focus:outline-none focus:border-white placeholder-slate-950 font-semibold"
+                    className="w-2/3 px-4 py-2 mt-7 bg-transparent text-base border-2 border-black focus:outline-none focus:border-white placeholder-slate-950 font-semibold"
                   />
                 </div>
 
@@ -101,7 +101,7 @@ const Login = () => {
                     value={password}
                     placeholder="Enter Password"
                     onChange={handleOnChange}
-                    className="w-2/3 px-4 py-2  mt-7 bg-transparent text-base border-b-2 border-black focus:outline-none focus:border-white placeholder-slate-950 font-semibold"
+                    className="w-2/3 px-4 py-2  mt-7 bg-transparent text-base border-2 border-black focus:outline-none focus:border-white placeholder-slate-950 font-semibold"
                   />
                 </div>
 
