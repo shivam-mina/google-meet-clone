@@ -14,14 +14,15 @@ const socketServer = (server) => {
   io.on('connection', (socket) => {
     socket.on('user:join', (data) => {
       console.log('Socket Conneted: ', socket.id)
-      const { roomId, emailId } = data
+      const { username, emailId, roomId } = data
 
-      console.log('User: ', emailId, ' Joined room: ', roomId)
+      console.log("User: ", username , ' Email: ', emailId, ' Joined room: ', roomId)
 
       emailToSocketMapping.set(emailId, socket.id)
       socketToEmailMapping.set(socket.id, emailId)
 
       io.to(roomId).emit('new-user:joined', {
+        username,
         emailId,
         id: socket.id,
         roomId: roomId,

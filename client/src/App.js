@@ -1,9 +1,9 @@
 import { Routes, Route } from 'react-router-dom'
 import axios from 'axios'
 
-import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Room from './pages/Room'
+import LoginAndSignUp from './pages/LoginAndSignUp'
 
 function App() {
   axios.defaults.baseURL = "http://localhost:5000/api"
@@ -11,7 +11,7 @@ function App() {
   return (
       <div>
         <Routes>
-          <Route path="/" element={<Login />} />
+          <Route path="/" element={<LoginAndSignUp />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/room/:roomId" element={<Room />} />
         </Routes>

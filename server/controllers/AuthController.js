@@ -1,6 +1,7 @@
 const User = require('../models/User')
 const bcrypt = require('bcryptjs')
 const { generateToken } = require('../utils/GenerateToken')
+const jwt = require('jsonwebtoken')
 
 // @desc    Register new user
 // @route   POST /api/users/signup
@@ -50,18 +51,17 @@ const Login = async (req, res) => {
       return res.status(404).json({ message: 'User not Found' })
     }
 
-    
     // Check for correct password
     if (await bcrypt.compare(password, existingUser.password)) {
       // Generating Jsonwebtoken
-      const token = generateToken(existingUser._id);
-      res.cookie("token",token,{
+      const token = generateToken(existingUser._id)
+      res.cookie('token', token, {
+        sameSite: 'none',
         secure: true,
-        sameSite: "none",
         httpOnly: true,
-        withCredentials: true
+        withCredentials: true,
       })
-      res.status(200).json({ message: 'login success', user: existingUser })
+      res.status(200).json({ message: 'success', user: existingUser })
     } else {
       res.status(401).json({ message: 'wrong password' })
     }
@@ -70,7 +70,31 @@ const Login = async (req, res) => {
   }
 }
 
+const Profile = async (req, res) => {
+  const token = req.cookies.token;
+  jwt.verify(token, process.env.TOKEN_KEY, async (err, data) => {
+    if (err) {
+      res.status(401).json({ message: 'Bad Token' })
+    }
+
+    const user = await User.findById(data._id)
+
+    const profile = {
+      _id: user._id,
+      username: user.username,
+      email : user.email,
+    }
+    if (user) {
+      res.status(200).json({ message: 'Verified', user:profile })
+    } else {
+      res.status(404)
+      throw new Error('User not found')
+    }
+  })
+}
+
 module.exports = {
   Signup,
   Login,
+  Profile,
 }

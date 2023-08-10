@@ -6,7 +6,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 const Room = () => {
   /** User variables */
   const socket = useSocket()
-  const [onlineUsers, setOnlineUsers] = useState({})
+  const [onlineUsers, setOnlineUsers] = useState([])
   const keyValueArray = Object.entries(onlineUsers)
   const navigate = useNavigate()
   const { roomId } = useParams()
@@ -30,7 +30,7 @@ const Room = () => {
   /**
    * triggered when we recieve (emit) that a new user joined the room
    * */
-  const handleNewUserJoined = useCallback((data) => {
+  const handleNewUserJoined = useCallback(() => {
     getOnlineUsers()
   }, [])
 
@@ -38,7 +38,7 @@ const Room = () => {
    * triggered when we recieve (emit) that a user left the room
    * */
   const handleDisconnect = useCallback(
-    (data) => {
+    () => {
       getOnlineUsers()
       navigate('/dashboard')
     },
@@ -48,7 +48,7 @@ const Room = () => {
   // when page loads
   useEffect(() => {
     getOnlineUsers()
-  }, [onlineUsers])
+  }, [])
 
   useEffect(() => {
     socket.on('new-user:joined', handleNewUserJoined)
