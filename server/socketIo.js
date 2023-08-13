@@ -16,7 +16,14 @@ const socketServer = (server) => {
       console.log('Socket Conneted: ', socket.id)
       const { username, emailId, roomId } = data
 
-      console.log("User: ", username , ' Email: ', emailId, ' Joined room: ', roomId)
+      console.log(
+        'User: ',
+        username,
+        ' Email: ',
+        emailId,
+        ' Joined room: ',
+        roomId
+      )
 
       emailToSocketMapping.set(emailId, socket.id)
       socketToEmailMapping.set(socket.id, emailId)
@@ -30,6 +37,15 @@ const socketServer = (server) => {
       socket.join(roomId)
       io.to(socket.id).emit('user:joined', { success: true, roomId: roomId })
 
+      // handling call
+      socket.on('outgoing:call', ({ offer }) => {
+        io.to(roomId).emit('incoming:call', { from: socket.id, offer })
+      })
+
+      //Accept call
+      socket.on('call:accepted', ({ answer }) => {
+        io.to(roomId).emit('call:accepted', { answer })
+      })
       // handling discoonect event
       socket.on('disconnect', () => {
         const emailId = socketToEmailMapping.get(socket.id)

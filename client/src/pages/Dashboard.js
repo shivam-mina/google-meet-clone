@@ -26,7 +26,11 @@ const Dashboard = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    socket.emit('user:join', { username: profileData.username, emailId: profileData.email, roomId: roomId })
+    socket.emit('user:join', {
+      username: profileData.username,
+      emailId: profileData.email,
+      roomId: roomId,
+    })
   }
 
   const handleUserJoined = useCallback(
@@ -47,7 +51,6 @@ const Dashboard = () => {
     }
   }, [socket, handleUserJoined])
 
-
   return (
     <div className="h-screen">
       <div className="flex h-screen">
@@ -58,7 +61,7 @@ const Dashboard = () => {
               alt="helio-logo"
             />
           </div>
-          <div className="left-container-title ml-20 mb-4 text-4xl font-extrabold leading-none tracking-tight md:text-5xl lg:text-6xl dark:text-black">
+          <div className="left-container-title ml-20 mb-4 text-4xl font-light leading-none tracking-tight md:text-5xl lg:text-6xl dark:text-black">
             welcome {profileData.username}
           </div>
           <div className="left-container-title ml-20 mb-4 text-4xl font-extrabold leading-none tracking-tight md:text-5xl lg:text-6xl dark:text-black">
@@ -87,12 +90,14 @@ const Dashboard = () => {
                 />
               </div>
               <div className="left-container-button">
-                {roomId!== '' && <button
-                  onClick={handleSubmit}
-                  className="bg-gray hover:bg-transparent text-white hover:text-black font-semibold text-blacks py-2 px-4 "
-                >
-                  Enter Room
-                </button>}
+                {roomId !== '' && (
+                  <button
+                    onClick={handleSubmit}
+                    className="bg-gray hover:bg-transparent text-white hover:text-black font-semibold text-blacks py-2 px-4 "
+                  >
+                    Enter Room
+                  </button>
+                )}
               </div>
             </div>
           </div>
