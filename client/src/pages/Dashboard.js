@@ -34,8 +34,8 @@ const Dashboard = () => {
   }
 
   const handleUserJoined = useCallback(
-    ({ roomId, success }) => {
-      console.log(roomId)
+    ({ roomId, success, socketId }) => {
+      console.log(`${socketId} joined ${roomId}`)
       if (success) {
         navigate(`/room/${roomId}`)
       }

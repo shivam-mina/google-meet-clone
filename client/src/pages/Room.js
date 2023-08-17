@@ -14,116 +14,49 @@ const Room = () => {
   const [onlineUsers, setOnlineUsers] = useState([])
   const [myStream, setMyStream] = useState()
   /** util */
-  const keyValueArray = Object.entries(onlineUsers)
 
   /**
    * Functions
    */
-  // to get online users
-  const getOnlineUsers = async () => {
-    try {
-      const { data } = await axios.get('/onlineusers', {
-        withCredentials: true,
-      })
-      console.log(data)
-      setOnlineUsers(data)
-    } catch (error) {
-      console.log(`Cannot get online users`, error)
-    }
-  }
 
   /**
    * triggered when we recieve (emit) that a new user joined the room
    * */
-  const handleNewUserJoined = useCallback(() => {
-    getOnlineUsers()
+  const handleNewUserJoined = useCallback(({ roomId, user }) => {
+    console.log(`new user ${user} joined this room ${roomId}`)
+  }, [])
+
+  /**
+   * triggered when we recieve list of all participants in the room
+   * it is recieved when a new user joins
+   * */
+  const handleParticipants = useCallback((users) => {
+    setOnlineUsers(users)
+    console.log(`participants in the room ${users}`)
   }, [])
 
   /**
    * triggered when we recieve (emit) that a user left the room
    * */
   const handleDisconnect = useCallback(() => {
-    getOnlineUsers()
     navigate('/dashboard')
   }, [navigate])
 
-  /**
-   * Function to initiate calling
-   */
-  const handleCalling = useCallback(async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-        video: true,
-      })
-      const offer = await peer.getOffer()
-      socket.emit('outgoing:call', { offer })
-      setMyStream(stream)
-    } catch (error) {
-      console.error('Error accessing media devices:', error)
-    }
-  }, [socket])
-
-  /**
-   * handle incoming call
-   */
-
-  const handleIncoming = useCallback(
-    async ({ offer }) => {
-      try {
-        if (offer) {
-          const stream = await navigator.mediaDevices.getUserMedia({
-            audio: true,
-            video: true,
-          })
-          setMyStream(stream)
-        }
-
-        const answer = await peer.getAnswer(offer)
-        socket.emit('call:accepted', { answer })
-      } catch (error) {
-        console.log('Invalid incoming offer:', offer)
-      }
-    },
-    [socket]
-  )
-
-  /**
-   * handle call accepted
-   */
-  const handleCallAccepted = useCallback(({ answer }) => {
-    try {
-      peer.setLocalDesc(answer)
-      console.log('call accepted')
-    } catch (error) {
-      console.log(error)
-    }
-  }, [])
-
-  // when page loads
   useEffect(() => {
-    getOnlineUsers()
-  }, [])
-
-  useEffect(() => {
-    socket.on('new-user:joined', handleNewUserJoined)
-    socket.on('incoming:call', handleIncoming)
-    socket.on('call:accepted', handleCallAccepted)
+    socket.on('newUser:joined', handleNewUserJoined)
+    socket.on('participants', handleParticipants)
     socket.on('disconnect', handleDisconnect)
+    // socket.on('incoming:call', handleIncoming)
+    // socket.on('call:accepted', handleCallAccepted)
 
     return () => {
-      socket.off('new-user:joined', handleNewUserJoined)
-      socket.off('incoming:call', handleIncoming)
-      socket.off('call:accepted', handleCallAccepted)
+      socket.off('newUser:joined', handleNewUserJoined)
+      socket.off('participants', handleParticipants)
       socket.off('disconnect', handleDisconnect)
+      // socket.off('incoming:call', handleIncoming)
+      // socket.off('call:accepted', handleCallAccepted)
     }
-  }, [
-    socket,
-    handleNewUserJoined,
-    handleDisconnect,
-    handleIncoming,
-    handleCallAccepted,
-  ])
+  }, [socket, handleNewUserJoined, handleParticipants, handleDisconnect])
 
   return (
     <>
@@ -131,39 +64,38 @@ const Room = () => {
         <div className="flex">
           <div className="left-container w-3/5">
             <div>Room {roomId}</div>
-            <div>
+            {/* <div>
               <button
-                onClick={handleCalling}
-                className="bg-black text-white font-semibold py-2 px-4 mt-6"
+              onClick={handleCalling}
+              className="bg-black text-white font-semibold py-2 px-4 mt-6"
               >
-                Join Call
+              Join Call
               </button>
               <div className="bg-gray-400  ml-10 mt-6 ">
-                <div>
-                  <>
-                    <h1>My Video stream</h1>
-                    {myStream && (
+              <div>
+              <>
+              <h1>My Video stream</h1>
+              {myStream && (
                       <ReactPlayer
-                        playing
+                      playing
                         muted
                         url={myStream}
                         height="200px"
                         width="200px"
                       />
-                    )}
-                  </>
-                </div>
-              </div>
-            </div>
+                      )}
+                      </>
+                      </div>
+                      </div>
+            </div> */}
           </div>
           <div className="right-container w-2/5">
             <h2>Online Users</h2>
             <div>
-              {keyValueArray.map(([key, value]) => (
-                <div key={key}>
-                  {key}: {value}
-                </div>
-              ))}
+              {onlineUsers &&
+                onlineUsers.map((participant, index) => {
+                  return <div key={index}>{participant}</div>
+                })}
             </div>
           </div>
 
@@ -175,3 +107,55 @@ const Room = () => {
 }
 
 export default Room
+/**
+ * Function to initiate calling
+ */
+// const handleCalling = useCallback(async () => {
+//   try {
+//     const stream = await navigator.mediaDevices.getUserMedia({
+//       audio: true,
+//       video: true,
+//     })
+//     const offer = await peer.getOffer()
+//     socket.emit('outgoing:call', { offer })
+//     setMyStream(stream)
+//   } catch (error) {
+//     console.error('Error accessing media devices:', error)
+//   }
+// },[socket])
+
+/**
+ * handle incoming call
+ */
+
+// const handleIncoming = useCallback(
+//   async ({ offer }) => {
+//     try {
+//       if (offer) {
+//         const stream = await navigator.mediaDevices.getUserMedia({
+//           audio: true,
+//           video: true,
+//         })
+//         setMyStream(stream)
+//       }
+
+//       const answer = await peer.getAnswer(offer)
+//       socket.emit('call:accepted', { answer })
+//     } catch (error) {
+//       console.log('Invalid incoming offer:', offer)
+//     }
+//   },
+//   [socket]
+// )
+
+/**
+ * handle call accepted
+ */
+// const handleCallAccepted = useCallback(({ answer }) => {
+//   try {
+//     peer.setLocalDesc(answer)
+//     console.log('call accepted')
+//   } catch (error) {
+//     console.log(error)
+//   }
+// }, [])

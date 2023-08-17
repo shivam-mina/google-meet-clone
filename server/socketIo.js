@@ -1,6 +1,5 @@
-const emailToSocketMapping = new Map()
-const socketToEmailMapping = new Map()
-
+const socketToUserMapping = new Map()
+const rooms = new Map()
 const socketServer = (server) => {
   // Setting up Socket-io
   const io = require('socket.io')(server, {
@@ -13,9 +12,7 @@ const socketServer = (server) => {
 
   io.on('connection', (socket) => {
     socket.on('user:join', (data) => {
-      console.log('Socket Conneted: ', socket.id)
       const { username, emailId, roomId } = data
-
       console.log(
         'User: ',
         username,
@@ -25,42 +22,83 @@ const socketServer = (server) => {
         roomId
       )
 
-      emailToSocketMapping.set(emailId, socket.id)
-      socketToEmailMapping.set(socket.id, emailId)
-
-      io.to(roomId).emit('new-user:joined', {
-        username,
-        emailId,
-        id: socket.id,
-        roomId: roomId,
-      })
+      // Join the room
       socket.join(roomId)
-      io.to(socket.id).emit('user:joined', { success: true, roomId: roomId })
 
-      // handling call
-      socket.on('outgoing:call', ({ offer }) => {
-        io.to(roomId).emit('incoming:call', { from: socket.id, offer })
+      /** If room is not existing , then we create a new set
+       * to store all the users in that room
+       * We are using like map <roomid ,set <userid>>
+       */
+
+      if (!rooms.get(roomId)) {
+        rooms.set(roomId, new Set())
+      }
+
+      // Now get the room set and add user to it
+      rooms.get(roomId).add(username)
+      socketToUserMapping.set(socket.id, username)
+
+      // Now we tell the user that he has joined the room
+      io.to(socket.id).emit('user:joined', {
+        roomId,
+        success: true,
+        socketId: socket.id,
       })
 
-      //Accept call
-      socket.on('call:accepted', ({ answer }) => {
-        io.to(roomId).emit('call:accepted', { answer })
+      // Now we notify all the users in room about the new user
+      io.to(roomId).emit('newUser:joined', {
+        roomId,
+        user: username,
+        socketId: socket.id,
       })
-      // handling discoonect event
-      socket.on('disconnect', () => {
-        const emailId = socketToEmailMapping.get(socket.id)
-        if (emailId) {
-          console.log('User Disconnected: ', emailId)
 
-          emailToSocketMapping.delete(emailId)
-          socketToEmailMapping.delete(socket.id)
+      // Sending list of all room members to new user joined
+      io.in(roomId).emit('participants', Array.from(rooms.get(roomId)))
+    })
+    socket.on('disconnect', () => {
+      const user = socketToUserMapping.get(socket.id)
+      // Remove the user from the room set
+      for (const [roomId, users] of rooms) {
+        if (users.has(user)) {
+          users.delete(user)
+          socketToUserMapping.delete(socket.id)
+          console.log(`User -- ${user} left`)
+          io.to(roomId).emit('user-left', socket.id)
+          io.in(roomId).emit('participants', Array.from(users))
+          if (users.size === 0) {
+            rooms.delete(roomId)
+          }
+          break
         }
-      })
+      }
+    })
+    // Signaling events
+    socket.on('offer', (roomId, userId, offer) => {
+      socket.to(userId).emit('offer', offer)
+    })
+
+    socket.on('answer', (roomId, userId, answer) => {
+      socket.to(userId).emit('answer', answer)
+    })
+
+    socket.on('ice-candidate', (roomId, userId, candidate) => {
+      socket.to(userId).emit('ice-candidate', candidate)
     })
   })
 }
 
 module.exports = {
-  emailToSocketMapping,
   socketServer,
 }
+
+/*
+// handling call
+socket.on('outgoing:call', ({ offer }) => {
+  io.to(roomId).emit('incoming:call', { from: socket.id, offer })
+})
+
+//Accept call
+socket.on('call:accepted', ({ answer }) => {
+  io.to(roomId).emit('call:accepted', { answer })
+})
+*/
