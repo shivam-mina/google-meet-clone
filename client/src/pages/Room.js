@@ -1,6 +1,5 @@
 import React, { useEffect, useCallback, useState } from 'react'
 import { useSocket } from '../context/SocketProvider'
-import axios from 'axios'
 import { useNavigate, useParams } from 'react-router-dom'
 import ReactPlayer from 'react-player'
 import peer from '../service/peer'
@@ -85,15 +84,18 @@ const Room = () => {
   /**
    * --------
    */
+  const sendStream = useCallback(() => {
+    for (const track of myStream.getTracks()) {
+      peer.peer.addTrack(track, myStream)
+    }
+  },[myStream])
   const handleCallAccepted = useCallback(
     ({ from, ans }) => {
       peer.setLocalDesc(ans)
       console.log('Call Accepted')
-      for (const track of myStream.getTracks()) {
-        peer.peer.addTrack(track, myStream)
-      }
+      sendStream()
     },
-    [myStream]
+    [sendStream]
   )
 
   /**
@@ -103,7 +105,7 @@ const Room = () => {
   useEffect(() => {
     peer.peer.addEventListener('track', async (ev) => {
       const remoteStream = ev.streams
-      setRemoteStream(remoteStream)
+      setRemoteStream(remoteStream[0])
     })
   }, [])
 
@@ -113,14 +115,15 @@ const Room = () => {
   }, [remoteSocketId, socket])
 
   const handleNegoIncoming = useCallback(
-    ({ from, offer }) => {
-      const ans = peer.getAnswer(offer)
+    async ({ from, offer }) => {
+      const ans = await peer.getAnswer(offer)
       socket.emit('peer:nego:done', { to: from, ans })
     },
     [socket]
   )
 
   const handleNegoFinal = useCallback(async ({ ans }) => {
+    console.log("handleNegoFinal >> ",ans);
     await peer.setLocalDesc(ans)
   }, [])
 
@@ -180,6 +183,7 @@ const Room = () => {
 
           {remoteSocketId ? <div>Connected</div> : <div>No one in room</div>}
           {remoteSocketId && <button onClick={handleCall}>Call</button>}
+          {remoteStream && <button onClick={sendStream}>Send Stream</button>}
         </div>
         <div>
           {myStream && (
