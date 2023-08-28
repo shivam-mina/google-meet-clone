@@ -84,21 +84,22 @@ const socketServer = (server) => {
     socket.on('ice-candidate', (roomId, userId, candidate) => {
       socket.to(userId).emit('ice-candidate', candidate)
     })
+
+    socket.on('user:call', ({ to, offer }) => {
+      io.to(to).emit('incoming:call', { from: socket.id, offer })
+    })
+    socket.on('call:accepted', ({ to, ans }) => {
+      io.to(to).emit('call:accepted', { from: socket.id, ans })
+    })
+    socket.on('peer:nego:needed', ({ to, offer }) => {
+      io.to(to).emit('peer:nego:needed', { from: socket.id, offer })
+    })
+    socket.on('peer:nego:done', ({ to, ans }) => {
+      io.to(to).emit('peer:nego:final', { from: socket.id, ans })
+    })
   })
 }
 
 module.exports = {
   socketServer,
 }
-
-/*
-// handling call
-socket.on('outgoing:call', ({ offer }) => {
-  io.to(roomId).emit('incoming:call', { from: socket.id, offer })
-})
-
-//Accept call
-socket.on('call:accepted', ({ answer }) => {
-  io.to(roomId).emit('call:accepted', { answer })
-})
-*/
