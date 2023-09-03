@@ -72,19 +72,6 @@ const socketServer = (server) => {
         }
       }
     })
-    // Signaling events
-    socket.on('offer', (roomId, userId, offer) => {
-      socket.to(userId).emit('offer', offer)
-    })
-
-    socket.on('answer', (roomId, userId, answer) => {
-      socket.to(userId).emit('answer', answer)
-    })
-
-    socket.on('ice-candidate', (roomId, userId, candidate) => {
-      socket.to(userId).emit('ice-candidate', candidate)
-    })
-
     socket.on('user:call', ({ to, offer }) => {
       io.to(to).emit('incoming:call', { from: socket.id, offer })
     })
@@ -92,7 +79,7 @@ const socketServer = (server) => {
       io.to(to).emit('call:accepted', { from: socket.id, ans })
     })
     socket.on('peer:nego:needed', ({ to, offer }) => {
-      io.to(to).emit('peer:nego:needed', { from: socket.id, offer:offer })
+      io.to(to).emit('peer:nego:needed', { from: socket.id, offer: offer })
     })
     socket.on('peer:nego:done', ({ to, ans }) => {
       io.to(to).emit('peer:nego:final', { from: socket.id, ans })

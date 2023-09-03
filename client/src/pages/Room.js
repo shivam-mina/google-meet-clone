@@ -16,6 +16,20 @@ const Room = () => {
   const [myStream, setMyStream] = useState(null)
   /** util */
 
+  // Send Stream
+  const sendStream = useCallback(() => {
+    for (const track of myStream.getTracks()) {
+      peer.peer.addTrack(track, myStream)
+    }
+  }, [myStream])
+
+  // Send video
+  useEffect(() => {
+    peer.peer.addEventListener('track', async (ev) => {
+      const remoteStream = ev.streams
+      setRemoteStream(remoteStream[0])
+    })
+  }, [])
   /**
    * Functions
    */
@@ -47,7 +61,7 @@ const Room = () => {
   }, [navigate])
 
   /**
-   * --------
+   * Function to initialize the call and send sdp offer
    */
   const handleCall = useCallback(async () => {
     const stream = await navigator.mediaDevices.getUserMedia({
@@ -60,7 +74,7 @@ const Room = () => {
   }, [remoteSocketId, socket])
 
   /**
-   * ----------
+   * Function to recieve the call and answer the sdp offer
    */
 
   const handleIncomingCall = useCallback(
@@ -80,15 +94,9 @@ const Room = () => {
     },
     [socket]
   )
-
   /**
-   * --------
+   * Function to recieve the sdp answer and connect the call
    */
-  const sendStream = useCallback(() => {
-    for (const track of myStream.getTracks()) {
-      peer.peer.addTrack(track, myStream)
-    }
-  },[myStream])
   const handleCallAccepted = useCallback(
     ({ from, ans }) => {
       peer.setLocalDesc(ans)
@@ -99,21 +107,18 @@ const Room = () => {
   )
 
   /**
-   * -------
+   * For Peer Negotiation
+   *  Function to initialize the call and send sdp offer
    */
-
-  useEffect(() => {
-    peer.peer.addEventListener('track', async (ev) => {
-      const remoteStream = ev.streams
-      setRemoteStream(remoteStream[0])
-    })
-  }, [])
-
   const handleNegoNeeded = useCallback(async () => {
     const offer = await peer.getOffer()
     socket.emit('peer:nego:needed', { offer, to: remoteSocketId })
   }, [remoteSocketId, socket])
 
+  /**
+   * For Peer Negotiation
+   *  Function to recieve the call and answer the sdp offer
+   */
   const handleNegoIncoming = useCallback(
     async ({ from, offer }) => {
       const ans = await peer.getAnswer(offer)
@@ -121,9 +126,12 @@ const Room = () => {
     },
     [socket]
   )
-
+  /**
+   * For Peer Negotiation
+   * Function to recieve the sdp answer and connect the call
+   */
   const handleNegoFinal = useCallback(async ({ ans }) => {
-    console.log("handleNegoFinal >> ",ans);
+    console.log('handleNegoFinal >> ', ans)
     await peer.setLocalDesc(ans)
   }, [])
 
