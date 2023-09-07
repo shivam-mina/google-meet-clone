@@ -63,6 +63,7 @@ const socketServer = (server) => {
           users.delete(user)
           socketToUserMapping.delete(socket.id)
           console.log(`User -- ${user} left`)
+          if(rooms.get(roomId).size == 0) rooms.delete(roomId) // deleting the roomId from map if room does not have any participants
           io.to(roomId).emit('user-left', socket.id)
           io.in(roomId).emit('participants', Array.from(users))
           if (users.size === 0) {
